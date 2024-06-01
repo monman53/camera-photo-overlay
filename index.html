@@ -1,44 +1,48 @@
-
 <!DOCTYPE html>
 <html>
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>media devices</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <title>Photo-overlay camera</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 </head>
 
 <body>
-
   <button id="devices_button" onclick="getDeviceList()">getDevices</button>
   <select id="camera_list" size="1" style="width:160pt;">
     <option>(video)</option>
   </select>
-  <!-- <select id="mic_list" size="1" style="width:160pt;">
-    <option>(audio)</option>
-  </select>
-  <select id="speaker_list" size="1" style="width:160pt;">
-    <option>(speaker)</option>
-  </select> -->
   <button id="start_video_button" onclick="startSelectedVideoAudio()">Start Selected Video/Audio</button>
   <button id="stop_button" onclick="stopVideo()">StopVideo</button>
-  <!-- <button id="speaker_button" onclick="setSpeaker()">SetSpeaker</button>
-  <button id="speaker_button" onclick="startFakeVideo()">start Fake video</button> -->
-  <br />
-  <video id="local_video" width="1920px" height="1080px" autoplay="1" style="border: 1px solid;"></video>
-  <div id="container"></div>
-</body>
-<script>
-  //navigator.getUserMedia  = navigator.getUserMedia    || navigator.webkitGetUserMedia ||
-  //                          navigator.mozGetUserMedia || navigator.msGetUserMedia;
-  //window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-  //window.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.RTCIceCandidate;
 
+  <div class="container">
+    <div>
+      <video id="local_video" width="1920px" height="1080px" autoplay="1" style="border: 1px solid;"></video>
+    </div>
+    <div>
+      <img width="1920" height="1080" src="https://raw.githubusercontent.com/monman53/juliaset/master/screenshot.png">
+    </div>
+  </div>
+</body>
+
+<style>
+  .container {
+    position: relative
+  }
+
+  .container > div {
+    position: absolute
+  }
+
+  img {
+    opacity: 0.5;
+  }
+</style>
+
+<script>
   var localVideo = document.getElementById('local_video');
   var videoContainer = document.getElementById('container');
-  // var micList = document.getElementById("mic_list");
   var cameraList = document.getElementById("camera_list");
-  // var speakerList = document.getElementById("speaker_list");
 
   var localStream = null;
 
@@ -105,7 +109,7 @@
         });
       })
       .catch(function (err) {
-        console.error('enumerateDevide ERROR:', err);
+        console.error('enumerateDevise ERROR:', err);
       });
   }
 
@@ -115,13 +119,8 @@
   }
 
   function startSelectedVideoAudio() {
-    // var audioId = getSelectedAudio();
     var deviceId = getSelectedVideo();
-    // console.log('selected video device id=' + deviceId + ' ,  audio=' + audioId);
     var constraints = {
-      // audio: {
-      //   deviceId: audioId
-      // },
       video: {
         deviceId: deviceId,
         width: 1920,
@@ -134,18 +133,11 @@
       constraints
     ).then(function (stream) {
       localStream = stream;
-      // logStream('selectedVideo', stream);
       localVideo.srcObject = stream;
     }).catch(function (err) {
       console.error('getUserMedia Err:', err);
     });
   }
-
-  navigator.mediaDevices.ondevicechange = function (evt) {
-    console.log('mediaDevices.ondevicechange() evt:', evt);
-  };
-
-
 </script>
 
 </html>
