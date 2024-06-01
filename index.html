@@ -1,0 +1,38 @@
+<h1>Web Cam Test</h1>
+<p id="debug"></p>
+<video id="video" width="1920" height="1080"></video>
+<canvas id="canvas"></canvas>
+<script>
+    // This will copy the contents of video element to a canvas element
+
+    let canvasEl = document.getElementById('canvas');
+    let context = canvasEl.getContext('2d');
+    let videoEl = document.getElementById('video');
+    let debug = document.getElementById('debug');
+
+    // function updateCanvas() {
+    //     context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+    //     window.requestAnimationFrame(updateCanvas);
+    // }
+    debug.innerText = 'js start'
+
+    navigator.getUserMedia(
+        { video: { width: 1920, height: 1080 } }, // Ask for video
+        (stream) => {
+            videoEl.srcObject = stream;
+            videoEl.play();
+            // window.requestAnimationFrame(updateCanvas);
+            debug.innerText = 'ok'
+        },
+        (error) => {
+            console.error(error);
+            debug.innerText = error
+        }
+    );
+</script>
+<style>
+    video {
+        /* filter: grayscale(100%); */
+        /* filter:opacity(10%); */
+    }
+</style>
