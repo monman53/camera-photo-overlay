@@ -1,38 +1,151 @@
-<h1>Web Cam Test</h1>
-<p id="debug"></p>
-<video id="video" width="1920" height="1080"></video>
-<canvas id="canvas"></canvas>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>media devices</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+
+<body>
+
+  <button id="devices_button" onclick="getDeviceList()">getDevices</button>
+  <select id="camera_list" size="1" style="width:160pt;">
+    <option>(video)</option>
+  </select>
+  <!-- <select id="mic_list" size="1" style="width:160pt;">
+    <option>(audio)</option>
+  </select>
+  <select id="speaker_list" size="1" style="width:160pt;">
+    <option>(speaker)</option>
+  </select> -->
+  <button id="start_video_button" onclick="startSelectedVideoAudio()">Start Selected Video/Audio</button>
+  <button id="stop_button" onclick="stopVideo()">StopVideo</button>
+  <!-- <button id="speaker_button" onclick="setSpeaker()">SetSpeaker</button>
+  <button id="speaker_button" onclick="startFakeVideo()">start Fake video</button> -->
+  <br />
+  <video id="local_video" width="1920px" height="1080px" autoplay="1" style="border: 1px solid;"></video>
+  <div id="container"></div>
+</body>
 <script>
-    // This will copy the contents of video element to a canvas element
+  //navigator.getUserMedia  = navigator.getUserMedia    || navigator.webkitGetUserMedia ||
+  //                          navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  //window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+  //window.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.RTCIceCandidate;
 
-    let canvasEl = document.getElementById('canvas');
-    let context = canvasEl.getContext('2d');
-    let videoEl = document.getElementById('video');
-    let debug = document.getElementById('debug');
+  var localVideo = document.getElementById('local_video');
+  var videoContainer = document.getElementById('container');
+  // var micList = document.getElementById("mic_list");
+  var cameraList = document.getElementById("camera_list");
+  // var speakerList = document.getElementById("speaker_list");
 
-    // function updateCanvas() {
-    //     context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-    //     window.requestAnimationFrame(updateCanvas);
-    // }
-    debug.innerText = 'js start'
+  var localStream = null;
 
-    navigator.getUserMedia(
-        { video: { width: 1920, height: 1080 } }, // Ask for video
-        (stream) => {
-            videoEl.srcObject = stream;
-            videoEl.play();
-            // window.requestAnimationFrame(updateCanvas);
-            debug.innerText = 'ok'
-        },
-        (error) => {
-            console.error(error);
-            debug.innerText = error
-        }
-    );
-</script>
-<style>
-    video {
-        /* filter: grayscale(100%); */
-        /* filter:opacity(10%); */
+  function stopVideo() {
+    localVideo.pause();
+    if (localVideo.srcObject) {
+      localVideo.srcObject = null;
     }
-</style>
+    else {
+      localVideo.src = "";
+    }
+
+    if (localStream) {
+      stopStream(localStream);
+      localStream = null;
+    }
+  }
+
+  function stopStream(stream) {
+    if (!stream) {
+      console.warn('NO stream');
+      return;
+    }
+
+    var tracks = stream.getTracks();
+    if (!tracks) {
+      console.warn('NO tracks');
+      return;
+    }
+
+    for (index in tracks) {
+      tracks[index].stop();
+    }
+  }
+
+  //--------------------
+
+  function clearDeviceList() {
+    while (cameraList.lastChild) {
+      cameraList.removeChild(cameraList.lastChild);
+    }
+  }
+
+  function addDevice(device) {
+    if (device.kind === 'videoinput') {
+      var id = device.deviceId;
+      var label = device.label || 'camera'; // label is available for https 
+
+      var option = document.createElement('option');
+      option.setAttribute('value', id);
+      option.innerHTML = label + '(' + id + ')';
+      cameraList.appendChild(option);
+    }
+  }
+
+  function getDeviceList() {
+    clearDeviceList();
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        devices.forEach(function (device) {
+          console.log(device.kind + ": " + device.label +
+            " id = " + device.deviceId);
+          addDevice(device);
+        });
+      })
+      .catch(function (err) {
+        console.error('enumerateDevide ERROR:', err);
+      });
+  }
+
+  function getSelectedVideo() {
+    var id = cameraList.options[cameraList.selectedIndex].value;
+    return id;
+  }
+
+  function startSelectedVideoAudio() {
+    // var audioId = getSelectedAudio();
+    var deviceId = getSelectedVideo();
+    // console.log('selected video device id=' + deviceId + ' ,  audio=' + audioId);
+    var constraints = {
+      // audio: {
+      //   deviceId: audioId
+      // },
+      video: {
+        deviceId: deviceId,
+        width: 1920,
+        height: 1080
+      }
+    };
+    console.log('mediaDevice.getMedia() constraints:', constraints);
+
+    navigator.mediaDevices.getUserMedia(
+      constraints
+    ).then(function (stream) {
+      localStream = stream;
+      // logStream('selectedVideo', stream);
+      localVideo.srcObject = stream;
+    }).catch(function (err) {
+      console.error('getUserMedia Err:', err);
+    });
+  }
+
+  navigator.mediaDevices.ondevicechange = function (evt) {
+    console.log('mediaDevices.ondevicechange() evt:', evt);
+  };
+
+
+</script>
+
+</html>
