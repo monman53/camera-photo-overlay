@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { Ref } from 'vue'
 
 const mode = ref("single")
@@ -11,14 +11,34 @@ const video0 = ref()
 const video1 = ref()
 const video2 = ref()
 const video3 = ref()
-const images: Ref<{ name: string, data: string | ArrayBuffer | null }[]> = ref([])
+const images: Ref<any[]> = ref([]) // TODO: type
+const image: Ref<any> = ref(null)
 const imageData = ref(null)
 
 const width = 1920
+const halfWidth = width / 2
 const height = 1080
+const halfHeight = height / 2
 const gridTemplate = `repeat(2, ${height / 2}px) / repeat(2, ${width / 2}px)`
 
 let localStream: any = null
+
+const quadStyles = computed(() => {
+  const styles: any[] = []
+  if (image.value) {
+    for (const q of image.value.quad) {
+      const scale = q.scale
+      const tx = q.cx - halfWidth / scale / 2
+      const ty = q.cy - halfHeight / scale / 2
+      const style = {
+        transformOrigin: `${tx}px ${ty}px`,
+        transform: `matrix(${scale}, 0, 0, ${scale}, ${-tx}, ${-ty})`
+      }
+      styles.push(style)
+    }
+  }
+  return styles
+})
 
 //================================
 // Methods
@@ -62,8 +82,9 @@ function updateCameras() {
     });
 }
 
-const setImage = (data: any) => {
-  imageData.value = data
+const setImage = (img: any) => {
+  image.value = img
+  imageData.value = img.data
 }
 
 function start(e: any) {
@@ -102,9 +123,19 @@ const loadLocalImages = (e: any) => {
   for (const file of files) {
     const reader = new FileReader();
     reader.onload = () => {
-      let url = reader.result;
-      setImage(url)
-      images.value.push({ name: file.name, data: url })
+      const url = reader.result;
+      image.value = {
+        name: file.name,
+        data: url,
+        quad: [
+          { cx: halfWidth / 2, cy: halfHeight / 2, scale: 2 },
+          { cx: halfWidth + halfWidth / 2, cy: halfHeight / 2, scale: 2 },
+          { cx: halfWidth / 2, cy: halfHeight + halfHeight / 2, scale: 2 },
+          { cx: halfWidth + halfWidth / 2, cy: halfHeight + halfHeight / 2, scale: 2 },
+        ]
+      }
+      images.value.push(image.value)
+      setImage(image.value)
     }
     reader.readAsDataURL(file);
   }
@@ -119,14 +150,14 @@ const load = () => {
   if (localData) {
     images.value = JSON.parse(localData)
     if (images.value.length > 0) {
-      setImage(images.value[0].data)
+      setImage(images.value[0])
     }
   }
 }
 
 const selectImage = (e: any) => {
   const idx = e.target.value
-  setImage(images.value[idx].data)
+  setImage(images.value[idx])
 }
 
 //================================
@@ -192,24 +223,45 @@ onMounted(() => {
       <div><video ref="video" :width :height autoplay="true"></video></div>
       <!-- Photo-->
       <div><img v-if="imageData" :src="imageData" :width :height></div>
+      <!-- SVG -->
+      <div>
+        <svg :width :height>
+          <g v-if="image">
+            <g v-for="q of image.quad">
+              <rect :x="q.cx - halfWidth / 2 / q.scale" :y="q.cy - halfHeight / 2 / q.scale"
+                :width="halfWidth / q.scale" :height="halfHeight / q.scale" fill="transparent" stroke="red"
+                stroke-width="2"></rect>
+            </g>
+          </g>
+        </svg>
+      </div>
     </div>
     <!-- Quad view -->
     <div v-show="mode === 'quad'" class="quad">
       <div class="half-container">
-        <div><video ref="video0" :width :height autoplay="true"></video></div>
-        <div><img v-if="imageData" :src="imageData" :width :height></div>
+        <div :style="quadStyles[0]">
+          <div><video ref="video0" :width :height autoplay="true"></video></div>
+          <div><img v-if="imageData" :src="imageData" :width :height></div>
+        </div>
       </div>
       <div class="half-container">
-        <div><video ref="video1" :width :height autoplay="true"></video></div>
-        <div><img v-if="imageData" :src="imageData" :width :height></div>
+        <div :style="quadStyles[1]">
+          <!-- <div> -->
+          <div><video ref="video1" :width :height autoplay="true"></video></div>
+          <div><img v-if="imageData" :src="imageData" :width :height></div>
+        </div>
       </div>
       <div class="half-container">
-        <div><video ref="video2" :width :height autoplay="true"></video></div>
-        <div><img v-if="imageData" :src="imageData" :width :height></div>
+        <div :style="quadStyles[2]">
+          <div><video ref="video2" :width :height autoplay="true"></video></div>
+          <div><img v-if="imageData" :src="imageData" :width :height></div>
+        </div>
       </div>
       <div class="half-container">
-        <div><video ref="video3" :width :height autoplay="true"></video></div>
-        <div><img v-if="imageData" :src="imageData" :width :height></div>
+        <div :style="quadStyles[3]">
+          <div><video ref="video3" :width :height autoplay="true"></video></div>
+          <div><img v-if="imageData" :src="imageData" :width :height></div>
+        </div>
       </div>
     </div>
   </div>
@@ -225,7 +277,8 @@ onMounted(() => {
 .half-container {
   width: 960px;
   height: 540px;
-  position: relative
+  position: relative;
+  border: solid 1px;
 }
 
 .container div,
