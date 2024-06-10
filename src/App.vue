@@ -2,16 +2,21 @@
 import { ref, onMounted } from 'vue'
 import type { Ref } from 'vue'
 
+const mode = ref("single")
 const cameras: Ref<{ id: string, label: string }[]> = ref([])
 const opacity = ref(0.5)
 // Reference to html elements
 const video = ref()
 const video0 = ref()
-const img = ref()
+const video1 = ref()
+const video2 = ref()
+const video3 = ref()
 const images: Ref<{ name: string, data: string | ArrayBuffer | null }[]> = ref([])
+const imageData = ref(null)
 
 const width = 1920
 const height = 1080
+const gridTemplate = `repeat(2, ${height / 2}px) / repeat(2, ${width / 2}px)`
 
 let localStream: any = null
 
@@ -21,8 +26,20 @@ let localStream: any = null
 
 function stop() {
   video.value.pause()
+  video0.value.pause()
+  video1.value.pause()
+  video2.value.pause()
+  video3.value.pause()
   video.value.srcObject = null
+  video0.value.srcObject = null
+  video1.value.srcObject = null
+  video2.value.srcObject = null
+  video3.value.srcObject = null
   video.value.src = ""
+  video0.value.src = ""
+  video1.value.src = ""
+  video2.value.src = ""
+  video3.value.src = ""
 
   if (localStream && localStream.getTracks) {
     const tracks = localStream.getTracks();
@@ -50,6 +67,10 @@ function updateCameras() {
     });
 }
 
+const setImage = (data) => {
+  imageData.value = data
+}
+
 function start(e: any) {
   const id = e.target.value
 
@@ -73,6 +94,9 @@ function start(e: any) {
     localStream = stream;
     video.value.srcObject = stream
     video0.value.srcObject = stream
+    video1.value.srcObject = stream
+    video2.value.srcObject = stream
+    video3.value.srcObject = stream
   }).catch(function (err) {
     console.error('getUserMedia Err:', err);
   });
@@ -84,7 +108,7 @@ const loadLocalImages = (e: any) => {
     const reader = new FileReader();
     reader.onload = () => {
       let url = reader.result;
-      img.value.src = url
+      setImage(url)
       images.value.push({ name: file.name, data: url })
     }
     reader.readAsDataURL(file);
@@ -100,14 +124,14 @@ const load = () => {
   if (localData) {
     images.value = JSON.parse(localData)
     if (images.value.length > 0) {
-      img.value.src = images.value[0].data
+      setImage(images.value[0].data)
     }
   }
 }
 
 const selectImage = (e: any) => {
   const idx = e.target.value
-  img.value.src = images.value[idx].data
+  setImage(images.value[idx].data)
 }
 
 //================================
@@ -122,44 +146,109 @@ onMounted(() => {
 
 <template>
   <!-- Controller -->
-  <label>
-    Camera list:
-    <select @change="start">
-      <template v-for="camera in cameras">
-        <option value="">-- select --</option>
-        <option :value="camera.id">{{ camera.label }}</option>
+  <div>
+    <!-- Mode -->
+    <label>
+      Mode
+      <label>
+        <input type="radio" v-model="mode" value="single">
+        Single
+      </label>
+      <label>
+        <input type="radio" v-model="mode" value="quad">
+        Quad
+      </label>
+    </label>
+    <br>
+    <!-- Opacity of image -->
+    <label>
+      Opacity
+      <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
+      <button @click="opacity = 0.0">0</button>
+      <button @click="opacity = 0.5">0.5</button>
+      <button @click="opacity = 1.0">1</button>
+    </label>
+    <br>
+    <!-- Camera list -->
+    <label>
+      Camera list:
+      <select @change="start">
+        <template v-for="camera in cameras">
+          <option value="">-- select --</option>
+          <option :value="camera.id">{{ camera.label }}</option>
+        </template>
+      </select>
+    </label>
+    <button @click="updateCameras"><i class="bi bi-arrow-clockwise"></i></button>
+    <!-- Stop camera -->
+    <button @click="stop"><i class="bi bi-stop-fill"></i></button>
+    <br>
+    <!-- Image load -->
+    <input type="file" @change="loadLocalImages" multiple /><br />
+    <!-- Local storage -->
+    <button @click="save">Save</button>
+    <button @click="load">Load</button>
+    <select @change="selectImage">
+      <template v-for="(image, idx) in images">
+        <option :value="idx">{{ image.name }}</option>
       </template>
     </select>
-  </label>
-  <button @click="updateCameras"><i class="bi bi-arrow-clockwise"></i></button>
-  <button @click="stop"><i class="bi bi-stop-fill"></i></button>
-  <label>
-    Opacity
-    <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
-    <button @click="opacity = 0.0">0</button>
-    <button @click="opacity = 0.5">0.5</button>
-    <button @click="opacity = 1.0">1</button>
-  </label>
-  <input type="file" @change="loadLocalImages" multiple /><br />
-  <button @click="save">Save</button>
-  <button @click="load">Load</button>
-  <select @change="selectImage">
-    <template v-for="(image, idx) in images">
-      <option :value="idx">{{ image.name }}</option>
-    </template>
-  </select>
+  </div>
 
   <!-- Stage -->
   <div>
     <!-- Single view -->
-    <div class="container">
+    <div v-show="mode === 'single'" class="container">
       <!-- Camera -->
       <div>
-        <video ref="video" :width :height autoplay="true" style="border: 1px solid;"></video>
+        <video ref="video" :width :height autoplay="true"></video>
       </div>
       <!-- Photo-->
       <div>
-        <img ref="img" :width :height>
+        <img v-if="imageData" :src="imageData" :width :height>
+      </div>
+    </div>
+    <!-- Quad view -->
+    <div v-show="mode === 'quad'" class="quad">
+      <div class="half-container">
+        <!-- Camera -->
+        <div>
+          <video ref="video0" :width :height autoplay="true"></video>
+        </div>
+        <!-- Photo-->
+        <div>
+          <img v-if="imageData" :src="imageData" :width :height>
+        </div>
+      </div>
+      <div class="half-container">
+        <!-- Camera -->
+        <div>
+          <video ref="video1" :width :height autoplay="true"></video>
+        </div>
+        <!-- Photo-->
+        <div>
+          <img v-if="imageData" :src="imageData" :width :height>
+        </div>
+      </div>
+      <div class="half-container">
+        <!-- Camera -->
+        <div>
+          <video ref="video2" :width :height autoplay="true"></video>
+        </div>
+        <!-- Photo-->
+        <div>
+          <img v-if="imageData" :src="imageData" :width :height>
+        </div>
+      </div>
+      <div class="half-container">
+        <!-- Camera -->
+        <div>
+          <video ref="video3" :width :height autoplay="true"></video>
+        </div>
+        <!-- Photo-->
+        <div>
+          <img v-if="imageData" :src="imageData" :width :height>
+        </div>
       </div>
     </div>
   </div>
@@ -172,8 +261,24 @@ onMounted(() => {
   position: relative
 }
 
-.container div {
+.half-container {
+  width: 960px;
+  height: 540px;
+  position: relative
+}
+
+.container div,
+.half-container div {
   position: absolute
+}
+
+.quad {
+  display: grid;
+  grid-template: v-bind("gridTemplate");
+}
+
+.quad>div {
+  overflow: hidden;
 }
 
 img {
