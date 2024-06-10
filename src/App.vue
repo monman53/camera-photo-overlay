@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { Ref } from 'vue'
 
 const cameras: Ref<{ id: string, label: string }[]> = ref([])
-
 const video = ref()
+const opacity = ref(0.5)
+
 let localStream: any = null
+
+//================================
+// Methods
+//================================
 
 function stop() {
   video.value.pause()
@@ -21,9 +26,7 @@ function stop() {
   localStream = null
 }
 
-//--------------------
-
-function getCameras() {
+function updateCameras() {
   cameras.value = []
   navigator.mediaDevices.enumerateDevices()
     .then(function (devices) {
@@ -66,10 +69,19 @@ function start(e: any) {
     console.error('getUserMedia Err:', err);
   });
 }
+
+//================================
+// Hooks
+//================================
+
+onMounted(() => {
+  updateCameras()
+})
+
 </script>
 
 <template>
-  <button @click="getCameras">Update Camera List</button>
+  <!-- Controller -->
   <label>
     Camera list:
     <select @change="start">
@@ -79,17 +91,40 @@ function start(e: any) {
       </template>
     </select>
   </label>
-  <button @click="stop">Stop</button>
+  <button @click="updateCameras"><i class="bi bi-arrow-clockwise"></i></button>
+  <button @click="stop"><i class="bi bi-stop-fill"></i></button>
+  <label>
+    Opacity
+    <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
+    <button @click="opacity=0.0">0</button>
+    <button @click="opacity=0.5">0.5</button>
+    <button @click="opacity=1.0">1</button>
+  </label>
 
+  <!-- Stage -->
   <div class="container">
+    <!-- Camera -->
     <div>
       <video ref="video" id="local_video" width="1920px" height="1080px" autoplay="true"
         style="border: 1px solid;"></video>
     </div>
+    <!-- Photo-->
     <div>
       <img width="1920" height="1080" src="https://raw.githubusercontent.com/monman53/juliaset/master/screenshot.png">
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.container {
+  position: relative
+}
+
+.container>div {
+  position: absolute
+}
+
+img {
+  opacity: v-bind("opacity");
+}
+</style>
