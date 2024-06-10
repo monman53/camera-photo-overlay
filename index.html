@@ -1,36 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  <title>Photo-overlay camera</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video photo overlay</title>
 </head>
 
 <body>
-  <button id="devices_button" onclick="getDeviceList()">getDevices</button>
-  <select id="camera_list" size="1" style="width:160pt;">
-    <option>(video)</option>
-  </select>
-  <button id="start_video_button" onclick="startSelectedVideoAudio()">Start Selected Video/Audio</button>
-  <button id="stop_button" onclick="stopVideo()">StopVideo</button>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
 
-  <div class="container">
-    <div>
-      <video id="local_video" width="1920px" height="1080px" autoplay="1" style="border: 1px solid;"></video>
-    </div>
-    <div>
-      <img width="1920" height="1080" src="https://raw.githubusercontent.com/monman53/juliaset/master/screenshot.png">
-    </div>
-  </div>
 </body>
+
+</html>
 
 <style>
   .container {
     position: relative
   }
 
-  .container > div {
+  .container>div {
     position: absolute
   }
 
@@ -40,104 +31,4 @@
 </style>
 
 <script>
-  var localVideo = document.getElementById('local_video');
-  var videoContainer = document.getElementById('container');
-  var cameraList = document.getElementById("camera_list");
-
-  var localStream = null;
-
-  function stopVideo() {
-    localVideo.pause();
-    if (localVideo.srcObject) {
-      localVideo.srcObject = null;
-    }
-    else {
-      localVideo.src = "";
-    }
-
-    if (localStream) {
-      stopStream(localStream);
-      localStream = null;
-    }
-  }
-
-  function stopStream(stream) {
-    if (!stream) {
-      console.warn('NO stream');
-      return;
-    }
-
-    var tracks = stream.getTracks();
-    if (!tracks) {
-      console.warn('NO tracks');
-      return;
-    }
-
-    for (index in tracks) {
-      tracks[index].stop();
-    }
-  }
-
-  //--------------------
-
-  function clearDeviceList() {
-    while (cameraList.lastChild) {
-      cameraList.removeChild(cameraList.lastChild);
-    }
-  }
-
-  function addDevice(device) {
-    if (device.kind === 'videoinput') {
-      var id = device.deviceId;
-      var label = device.label || 'camera'; // label is available for https 
-
-      var option = document.createElement('option');
-      option.setAttribute('value', id);
-      option.innerHTML = label + '(' + id + ')';
-      cameraList.appendChild(option);
-    }
-  }
-
-  function getDeviceList() {
-    clearDeviceList();
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        devices.forEach(function (device) {
-          console.log(device.kind + ": " + device.label +
-            " id = " + device.deviceId);
-          addDevice(device);
-        });
-      })
-      .catch(function (err) {
-        console.error('enumerateDevise ERROR:', err);
-      });
-  }
-
-  function getSelectedVideo() {
-    var id = cameraList.options[cameraList.selectedIndex].value;
-    return id;
-  }
-
-  function startSelectedVideoAudio() {
-    var deviceId = getSelectedVideo();
-    var constraints = {
-      video: {
-        deviceId: deviceId,
-        width: 1920,
-        height: 1080
-      }
-    };
-    console.log('mediaDevice.getMedia() constraints:', constraints);
-
-    navigator.mediaDevices.getUserMedia(
-      constraints
-    ).then(function (stream) {
-      localStream = stream;
-      localVideo.srcObject = stream;
-    }).catch(function (err) {
-      console.error('getUserMedia Err:', err);
-    });
-  }
 </script>
-
-</html>

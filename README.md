@@ -1,14 +1,15 @@
-# camera-photo-overlay
+# video-photo-overlay
 
-## Setup
+[https://monman53.github.io/video-photo-overlay/](https://monman53.github.io/video-photo-overlay/)
 
-```
-$ npm install -g http-server
-$ openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
-```
+## Development
 
-## Develop
+```sh
+npm install
 
-```
-$ http-server -S -C cert.pem
+# Compile and Hot-Reload for Development
+npm run dev
+
+# Type-Check, Compile and Minify for Production
+npm run build
 ```
