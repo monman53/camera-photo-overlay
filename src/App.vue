@@ -7,6 +7,7 @@ const opacity = ref(0.5)
 // Reference to html elements
 const video = ref()
 const img = ref()
+const images: Ref<{ name: string, data: string | ArrayBuffer | null }[]> = ref([])
 
 let localStream: any = null
 
@@ -78,11 +79,30 @@ const loadLocalImages = (e: any) => {
     const reader = new FileReader();
     reader.onload = () => {
       let url = reader.result;
-      console.log(file, url)
       img.value.src = url
+      images.value.push({ name: file.name, data: url })
     }
     reader.readAsDataURL(file);
   }
+}
+
+const save = () => {
+  localStorage.setItem('images', JSON.stringify(images.value))
+}
+
+const load = () => {
+  const localData = localStorage.getItem('images')
+  if (localData) {
+    images.value = JSON.parse(localData)
+    if (images.value.length > 0) {
+      img.value.src = images.value[0].data
+    }
+  }
+}
+
+const selectImage = (e: any) => {
+  const idx = e.target.value
+  img.value.src = images.value[idx].data
 }
 
 //================================
@@ -115,7 +135,14 @@ onMounted(() => {
     <button @click="opacity = 0.5">0.5</button>
     <button @click="opacity = 1.0">1</button>
   </label>
-  <input type="file" @change="loadLocalImages" multiple/><br />
+  <input type="file" @change="loadLocalImages" multiple /><br />
+  <button @click="save">Save</button>
+  <button @click="load">Load</button>
+    <select @change="selectImage">
+      <template v-for="(image, idx) in images">
+        <option :value="idx">{{ image.name }}</option>
+      </template>
+    </select>
 
   <!-- Stage -->
   <div class="container">
