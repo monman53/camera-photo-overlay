@@ -3,8 +3,10 @@ import { ref, onMounted } from 'vue'
 import type { Ref } from 'vue'
 
 const cameras: Ref<{ id: string, label: string }[]> = ref([])
-const video = ref()
 const opacity = ref(0.5)
+// Reference to html elements
+const video = ref()
+const img = ref()
 
 let localStream: any = null
 
@@ -70,6 +72,19 @@ function start(e: any) {
   });
 }
 
+const loadLocalImages = (e: any) => {
+  const files = e.target.files;
+  for (const file of files) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let url = reader.result;
+      console.log(file, url)
+      img.value.src = url
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
 //================================
 // Hooks
 //================================
@@ -96,10 +111,11 @@ onMounted(() => {
   <label>
     Opacity
     <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
-    <button @click="opacity=0.0">0</button>
-    <button @click="opacity=0.5">0.5</button>
-    <button @click="opacity=1.0">1</button>
+    <button @click="opacity = 0.0">0</button>
+    <button @click="opacity = 0.5">0.5</button>
+    <button @click="opacity = 1.0">1</button>
   </label>
+  <input type="file" @change="loadLocalImages" multiple/><br />
 
   <!-- Stage -->
   <div class="container">
@@ -110,7 +126,7 @@ onMounted(() => {
     </div>
     <!-- Photo-->
     <div>
-      <img width="1920" height="1080" src="https://raw.githubusercontent.com/monman53/juliaset/master/screenshot.png">
+      <img ref="img" width="1920" height="1080">
     </div>
   </div>
 </template>
