@@ -278,7 +278,7 @@ onMounted(() => {
   width: 960px;
   height: 540px;
   position: relative;
-  border: solid 1px;
+  /* border: solid 1px; */
 }
 
 .container div,
