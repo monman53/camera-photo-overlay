@@ -15,5 +15,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  base: 'https://monman53.github.io/video-photo-overlay/'
+  base: 'https://monman53.github.io/camera-photo-overlay/'
 })

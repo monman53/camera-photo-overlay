@@ -1,6 +1,6 @@
-# video-photo-overlay
+# camera-photo-overlay
 
-[https://monman53.github.io/video-photo-overlay/](https://monman53.github.io/video-photo-overlay/)
+[https://monman53.github.io/camera-photo-overlay/](https://monman53.github.io/camera-photo-overlay/)
 
 ## Development
 
