@@ -24,7 +24,7 @@ let localStream: any = null
 // Methods
 //================================
 
-const stopVideo = (video) => {
+const stopVideo = (video: any) => {
   video.value.pause()
   video.value.srcObject = null
   video.value.src = ""
@@ -62,7 +62,7 @@ function updateCameras() {
     });
 }
 
-const setImage = (data) => {
+const setImage = (data: any) => {
   imageData.value = data
 }
 
