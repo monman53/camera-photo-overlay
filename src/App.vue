@@ -6,8 +6,12 @@ const cameras: Ref<{ id: string, label: string }[]> = ref([])
 const opacity = ref(0.5)
 // Reference to html elements
 const video = ref()
+const video0 = ref()
 const img = ref()
 const images: Ref<{ name: string, data: string | ArrayBuffer | null }[]> = ref([])
+
+const width = 1920
+const height = 1080
 
 let localStream: any = null
 
@@ -57,8 +61,8 @@ function start(e: any) {
   var constraints = {
     video: {
       deviceId: id,
-      width: 1920,
-      height: 1080
+      width,
+      height,
     }
   };
   console.log('mediaDevice.getMedia() constraints:', constraints);
@@ -68,6 +72,7 @@ function start(e: any) {
   ).then(function (stream) {
     localStream = stream;
     video.value.srcObject = stream
+    video0.value.srcObject = stream
   }).catch(function (err) {
     console.error('getUserMedia Err:', err);
   });
@@ -138,32 +143,36 @@ onMounted(() => {
   <input type="file" @change="loadLocalImages" multiple /><br />
   <button @click="save">Save</button>
   <button @click="load">Load</button>
-    <select @change="selectImage">
-      <template v-for="(image, idx) in images">
-        <option :value="idx">{{ image.name }}</option>
-      </template>
-    </select>
+  <select @change="selectImage">
+    <template v-for="(image, idx) in images">
+      <option :value="idx">{{ image.name }}</option>
+    </template>
+  </select>
 
   <!-- Stage -->
-  <div class="container">
-    <!-- Camera -->
-    <div>
-      <video ref="video" id="local_video" width="1920px" height="1080px" autoplay="true"
-        style="border: 1px solid;"></video>
-    </div>
-    <!-- Photo-->
-    <div>
-      <img ref="img" width="1920" height="1080">
+  <div>
+    <!-- Single view -->
+    <div class="container">
+      <!-- Camera -->
+      <div>
+        <video ref="video" :width :height autoplay="true" style="border: 1px solid;"></video>
+      </div>
+      <!-- Photo-->
+      <div>
+        <img ref="img" :width :height>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .container {
+  width: 1920px;
+  height: 1080px;
   position: relative
 }
 
-.container>div {
+.container div {
   position: absolute
 }
 
