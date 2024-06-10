@@ -24,23 +24,18 @@ let localStream: any = null
 // Methods
 //================================
 
-function stop() {
+const stopVideo = (video) => {
   video.value.pause()
-  video0.value.pause()
-  video1.value.pause()
-  video2.value.pause()
-  video3.value.pause()
   video.value.srcObject = null
-  video0.value.srcObject = null
-  video1.value.srcObject = null
-  video2.value.srcObject = null
-  video3.value.srcObject = null
   video.value.src = ""
-  video0.value.src = ""
-  video1.value.src = ""
-  video2.value.src = ""
-  video3.value.src = ""
+}
 
+function stop() {
+  stopVideo(video)
+  stopVideo(video0)
+  stopVideo(video1)
+  stopVideo(video2)
+  stopVideo(video3)
   if (localStream && localStream.getTracks) {
     const tracks = localStream.getTracks();
     for (const idx in tracks) {
@@ -150,14 +145,8 @@ onMounted(() => {
     <!-- Mode -->
     <label>
       Mode
-      <label>
-        <input type="radio" v-model="mode" value="single">
-        Single
-      </label>
-      <label>
-        <input type="radio" v-model="mode" value="quad">
-        Quad
-      </label>
+      <label><input type="radio" v-model="mode" value="single"> Single</label>
+      <label><input type="radio" v-model="mode" value="quad"> Quad</label>
     </label>
     <br>
     <!-- Opacity of image -->
@@ -200,55 +189,27 @@ onMounted(() => {
     <!-- Single view -->
     <div v-show="mode === 'single'" class="container">
       <!-- Camera -->
-      <div>
-        <video ref="video" :width :height autoplay="true"></video>
-      </div>
+      <div><video ref="video" :width :height autoplay="true"></video></div>
       <!-- Photo-->
-      <div>
-        <img v-if="imageData" :src="imageData" :width :height>
-      </div>
+      <div><img v-if="imageData" :src="imageData" :width :height></div>
     </div>
     <!-- Quad view -->
     <div v-show="mode === 'quad'" class="quad">
       <div class="half-container">
-        <!-- Camera -->
-        <div>
-          <video ref="video0" :width :height autoplay="true"></video>
-        </div>
-        <!-- Photo-->
-        <div>
-          <img v-if="imageData" :src="imageData" :width :height>
-        </div>
+        <div><video ref="video0" :width :height autoplay="true"></video></div>
+        <div><img v-if="imageData" :src="imageData" :width :height></div>
       </div>
       <div class="half-container">
-        <!-- Camera -->
-        <div>
-          <video ref="video1" :width :height autoplay="true"></video>
-        </div>
-        <!-- Photo-->
-        <div>
-          <img v-if="imageData" :src="imageData" :width :height>
-        </div>
+        <div><video ref="video1" :width :height autoplay="true"></video></div>
+        <div><img v-if="imageData" :src="imageData" :width :height></div>
       </div>
       <div class="half-container">
-        <!-- Camera -->
-        <div>
-          <video ref="video2" :width :height autoplay="true"></video>
-        </div>
-        <!-- Photo-->
-        <div>
-          <img v-if="imageData" :src="imageData" :width :height>
-        </div>
+        <div><video ref="video2" :width :height autoplay="true"></video></div>
+        <div><img v-if="imageData" :src="imageData" :width :height></div>
       </div>
       <div class="half-container">
-        <!-- Camera -->
-        <div>
-          <video ref="video3" :width :height autoplay="true"></video>
-        </div>
-        <!-- Photo-->
-        <div>
-          <img v-if="imageData" :src="imageData" :width :height>
-        </div>
+        <div><video ref="video3" :width :height autoplay="true"></video></div>
+        <div><img v-if="imageData" :src="imageData" :width :height></div>
       </div>
     </div>
   </div>
