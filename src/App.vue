@@ -5,6 +5,7 @@ import type { Ref } from 'vue'
 const mode = ref("single")
 const cameras: Ref<{ id: string, label: string }[]> = ref([])
 const opacity = ref(0.5)
+const globalScale = ref(2.0)
 // Reference to html elements
 const video = ref()
 const video0 = ref()
@@ -200,6 +201,49 @@ onMounted(() => {
   updateCameras()
 })
 
+const svg = ref()
+
+const getPositionOnSvg = (clientX: number, clientY: number) => {
+  const rect = svg.value.getBoundingClientRect()
+  const x = clientX - rect.left
+  const y = clientY - rect.top
+  return [x, y]
+}
+
+// Event handlers
+let moveHandler: any = null;
+const svgMoveStartHandler = (e: any, quad: any) => {
+  console.log('hoge')
+  e.preventDefault();
+  const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+  const [cx0, cy0] = [quad.cx, quad.cy];
+  const handler = (e_: any) => {
+    e_.preventDefault();
+    let clientX = e_.clientX
+    let clientY = e_.clientY
+    if (e_.type == 'touchmove') {
+      clientX = e_.touches[0].clientX
+      clientY = e_.touches[0].clientY
+    }
+    const [x, y] = getPositionOnSvg(clientX, clientY);
+    const dx = (x - x0)
+    const dy = (y - y0)
+    quad.cx = cx0 + dx
+    quad.cy = cy0 + dy
+  }
+  moveHandler = handler;
+}
+const svgMoveHandler = (e: any) => {
+  e.preventDefault();
+  if (moveHandler !== null) {
+    moveHandler(e)
+  }
+}
+const svgMoveEndHandler = () => {
+  moveHandler = null;
+  // tpCache = [];
+}
+
 </script>
 
 <template>
@@ -260,12 +304,13 @@ onMounted(() => {
       <div><img v-if="imageData" :src="imageData" :width :height></div>
       <!-- SVG -->
       <div>
-        <svg :width :height>
+        <svg :width :height ref="svg" @pointermove="svgMoveHandler" @touchmove="svgMoveEndHandler"
+          @pointerup="svgMoveEndHandler">
           <g v-if="image">
             <g v-for="q of image.quad">
               <rect :x="q.cx - halfWidth / 2 / q.scale" :y="q.cy - halfHeight / 2 / q.scale"
                 :width="halfWidth / q.scale" :height="halfHeight / q.scale" fill="transparent" stroke="red"
-                stroke-width="2"></rect>
+                stroke-width="2" @pointerdown="svgMoveStartHandler($event, q)"></rect>
             </g>
           </g>
         </svg>
