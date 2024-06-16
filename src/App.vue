@@ -246,58 +246,6 @@ const svgMoveEndHandler = () => {
 </script>
 
 <template>
-  <!-- Controller -->
-  <div>
-    <!-- Mode -->
-    <label>
-      Mode
-      <label><input type="radio" v-model="mode" value="single"> Single</label>
-      <label><input type="radio" v-model="mode" value="quad"> Quad</label>
-    </label>
-    <br>
-    <!-- Opacity of image -->
-    <label>
-      Opacity
-      <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
-      <button @click="opacity = 0.0">0</button>
-      <button @click="opacity = 0.5">0.5</button>
-      <button @click="opacity = 1.0">1</button>
-    </label>
-    <br>
-    <label>
-      Scale
-      <input type="range" min="1" max="10" step="0.01" v-model.number="globalScale">
-    </label>
-    <br>
-    <!-- Camera list -->
-    <label>
-      Camera list:
-      <select @change="start">
-        <template v-for="camera in cameras">
-          <option value="">-- select --</option>
-          <option :value="camera.id">{{ camera.label }}</option>
-        </template>
-      </select>
-    </label>
-    <button @click="updateCameras"><i class="bi bi-arrow-clockwise"></i></button>
-    <!-- Stop camera -->
-    <button @click="stop"><i class="bi bi-stop-fill"></i></button>
-    <br>
-    <!-- Image load -->
-    <input type="file" @change="loadLocalImages" multiple /><br />
-    <!-- Local storage -->
-    <button @click="save">Save</button>
-    <button @click="load">Load</button>
-    <select @change="selectImage">
-      <template v-for="(image, idx) in images">
-        <option :value="idx">{{ image.name }}</option>
-      </template>
-    </select>
-    <button @click="clear">Clear</button>
-    <button @click="download">download</button>
-    <input type="file" @change="upload" />
-  </div>
-
   <!-- Stage -->
   <div>
     <!-- Single view -->
@@ -349,6 +297,60 @@ const svgMoveEndHandler = () => {
       </div>
     </div>
   </div>
+  <!-- Controller -->
+  <div>
+    <!-- Mode -->
+    <fieldset>
+      <legend>Mode</legend>
+      <label><input type="radio" v-model="mode" value="single"> Single</label>
+      <label><input type="radio" v-model="mode" value="quad"> Quad</label>
+    </fieldset>
+    <!-- Opacity of image -->
+    <fieldset>
+      <legend>Opacity</legend>
+      <input type="range" min="0" max="1" step="0.01" v-model.number="opacity">
+      <button @click="opacity = 0.0">0</button>
+      <button @click="opacity = 0.5">0.5</button>
+      <button @click="opacity = 1.0">1</button>
+    </fieldset>
+    <fieldset>
+      <legend>Scale</legend>
+      <input type="range" min="1" max="10" step="0.01" v-model.number="globalScale">
+    </fieldset>
+    <!-- Camera list -->
+    <fieldset>
+      <legend>Camera List</legend>
+      <select @change="start">
+        <template v-for="camera in cameras">
+          <option value="">-- select --</option>
+          <option :value="camera.id">{{ camera.label }}</option>
+        </template>
+      </select>
+      <button @click="updateCameras"><i class="bi bi-arrow-clockwise"></i></button>
+      <!-- Stop camera -->
+      <button @click="stop"><i class="bi bi-stop-fill"></i></button>
+    </fieldset>
+    <!-- Image load -->
+    <fieldset>
+      <legend>Image Load</legend>
+      <input type="file" @change="loadLocalImages" multiple /><br />
+    </fieldset>
+    <!-- Local storage -->
+    <fieldset>
+      <legend>Local Storage</legend>
+      <button @click="save">Save</button>
+      <button @click="load">Load</button>
+      <select @change="selectImage">
+        <template v-for="(image, idx) in images">
+          <option :value="idx">{{ image.name }}</option>
+        </template>
+      </select>
+      <button @click="clear">Clear</button>
+      <button @click="download">download</button>
+      <input type="file" @change="upload" />
+    </fieldset>
+  </div>
+
   <!-- Image list -->
   <div>
     <template v-for="image in images">
