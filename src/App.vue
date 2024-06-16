@@ -90,10 +90,10 @@ const setImage = (img: any) => {
 function start(e: any) {
   const id = e.target.value
 
-  if (id === "") {
-    stop()
-    return
-  }
+  // if (id === "") {
+  //   stop()
+  //   return
+  // }
 
   var constraints = {
     video: {
