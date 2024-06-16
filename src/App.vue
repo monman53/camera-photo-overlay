@@ -349,6 +349,12 @@ const svgMoveEndHandler = () => {
       </div>
     </div>
   </div>
+  <!-- Image list -->
+  <div>
+    <template v-for="image in images">
+      <img :src="image.data" width="256" @click="setImage(image)" style="border: solid green">
+    </template>
+  </div>
 </template>
 
 <style scoped>
