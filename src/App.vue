@@ -5,7 +5,7 @@ import type { Ref } from 'vue'
 const mode = ref("single")
 const cameras: Ref<{ id: string, label: string }[]> = ref([])
 const opacity = ref(0.5)
-const globalScale = ref(2.0)
+const globalScale = ref(3.0)
 // Reference to html elements
 const video = ref()
 const video0 = ref()
@@ -28,7 +28,7 @@ const quadStyles = computed(() => {
   const styles: any[] = []
   if (image.value) {
     for (const q of image.value.quad) {
-      const scale = q.scale
+      const scale = globalScale.value
       const tx = q.cx - halfWidth / scale / 2
       const ty = q.cy - halfHeight / scale / 2
       const style = {
@@ -213,8 +213,7 @@ const getPositionOnSvg = (clientX: number, clientY: number) => {
 // Event handlers
 let moveHandler: any = null;
 const svgMoveStartHandler = (e: any, quad: any) => {
-  console.log('hoge')
-  e.preventDefault();
+  // e.preventDefault();
   const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
   const [cx0, cy0] = [quad.cx, quad.cy];
   const handler = (e_: any) => {
@@ -234,7 +233,7 @@ const svgMoveStartHandler = (e: any, quad: any) => {
   moveHandler = handler;
 }
 const svgMoveHandler = (e: any) => {
-  e.preventDefault();
+  // e.preventDefault();
   if (moveHandler !== null) {
     moveHandler(e)
   }
@@ -263,6 +262,11 @@ const svgMoveEndHandler = () => {
       <button @click="opacity = 0.0">0</button>
       <button @click="opacity = 0.5">0.5</button>
       <button @click="opacity = 1.0">1</button>
+    </label>
+    <br>
+    <label>
+      Scale
+      <input type="range" min="1" max="10" step="0.01" v-model.number="globalScale">
     </label>
     <br>
     <!-- Camera list -->
@@ -304,12 +308,12 @@ const svgMoveEndHandler = () => {
       <div><img v-if="imageData" :src="imageData" :width :height></div>
       <!-- SVG -->
       <div>
-        <svg :width :height ref="svg" @pointermove="svgMoveHandler" @touchmove="svgMoveEndHandler"
+        <svg :width :height ref="svg" @pointermove="svgMoveHandler" @touchmove="svgMoveHandler"
           @pointerup="svgMoveEndHandler">
           <g v-if="image">
             <g v-for="q of image.quad">
-              <rect :x="q.cx - halfWidth / 2 / q.scale" :y="q.cy - halfHeight / 2 / q.scale"
-                :width="halfWidth / q.scale" :height="halfHeight / q.scale" fill="transparent" stroke="red"
+              <rect :x="q.cx - halfWidth / 2 / globalScale" :y="q.cy - halfHeight / 2 / globalScale"
+                :width="halfWidth / globalScale" :height="halfHeight / globalScale" fill="transparent" stroke="red"
                 stroke-width="2" @pointerdown="svgMoveStartHandler($event, q)"></rect>
             </g>
           </g>
@@ -317,7 +321,7 @@ const svgMoveEndHandler = () => {
       </div>
     </div>
     <!-- Quad view -->
-    <div v-show="mode === 'quad'" class="quad">
+    <div v-show="mode === 'quad'" class="quad" @click="opacity = 1 - Math.floor(opacity)">
       <div class="half-container">
         <div :style="quadStyles[0]">
           <div><video ref="video0" :width :height autoplay="true"></video></div>
