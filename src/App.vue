@@ -155,6 +155,38 @@ const load = () => {
   }
 }
 
+const clear = () => {
+  if (window.confirm("Really clear?")) {
+    localStorage.removeItem('images')
+  }
+}
+
+const download = () => {
+  const text = JSON.stringify(images.value);
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+const upload = (e: any) => {
+  const file = e.target.files[0];
+  if (file && file.type === 'text/plain') {
+    const reader = new FileReader();
+    reader.onload = function (e_: any) {
+      const text = e_.target.result;
+      images.value = JSON.parse(text)
+      setImage(images.value[0])
+    };
+    reader.readAsText(file);
+  } else {
+    alert('Please upload a valid text file.');
+  }
+}
+
 const selectImage = (e: any) => {
   const idx = e.target.value
   setImage(images.value[idx])
@@ -213,6 +245,9 @@ onMounted(() => {
         <option :value="idx">{{ image.name }}</option>
       </template>
     </select>
+    <button @click="clear">Clear</button>
+    <button @click="download">download</button>
+    <input type="file" @change="upload" />
   </div>
 
   <!-- Stage -->
